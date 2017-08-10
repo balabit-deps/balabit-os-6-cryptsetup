@@ -1,3 +1,10 @@
+cryptsetup (2:1.6.6-5ubuntu2.1) xenial; urgency=medium
+
+  * d/p/fips-fix-luksformat-with-recent-kernels -- fix luksFormat with recent
+    FIPS enabled kernels. (LP: #1715010)
+
+ -- Marcelo Henrique Cerri <marcelo.cerri@canonical.com>  Thu, 10 Aug 2017 10:49:02 -0300
+
 cryptsetup (2:1.6.6-5ubuntu2) wily; urgency=medium
 
   * Fix stupid typo in Recommends "busybox | busybox-static" inversion.

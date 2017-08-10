@@ -1,0 +1,32 @@
+From 3c2135b36bbc52d052e4ced7c94dc4981eb07a53 Mon Sep 17 00:00:00 2001
+From: Milan Broz <gmazyland@gmail.com>
+Date: Fri, 21 Apr 2017 08:16:14 +0200
+Subject: [PATCH] Fix luksFormat if running in FIPS mode on recent kernel.
+
+Recently introduced check for weak keys for XTS mode makes
+zeroed key for algorithm check unusable.
+
+Use random key for the test instead.
+---
+ lib/luks1/keymanage.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
+
+Index: cryptsetup-1.6.6/lib/luks1/keymanage.c
+===================================================================
+--- cryptsetup-1.6.6.orig/lib/luks1/keymanage.c	2017-08-10 10:42:02.261596016 -0300
++++ cryptsetup-1.6.6/lib/luks1/keymanage.c	2017-08-10 10:42:02.261596016 -0300
+@@ -613,9 +613,11 @@
+ 	if (!empty_key)
+ 		return -ENOMEM;
+ 
+-	r = LUKS_decrypt_from_storage(buf, sizeof(buf),
+-				      hdr->cipherName, hdr->cipherMode,
+-				      empty_key, 0, ctx);
++	/* No need to get KEY quality random but it must avoid known weak keys. */
++	r = crypt_random_get(ctx, empty_key->key, empty_key->keylength, CRYPT_RND_NORMAL);
++	if (!r)
++		r = LUKS_decrypt_from_storage(buf, sizeof(buf), hdr->cipherName,
++					      hdr->cipherMode, empty_key, 0, ctx);
+ 
+ 	crypt_free_volume_key(empty_key);
+ 	memset(buf, 0, sizeof(buf));
